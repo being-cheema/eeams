@@ -1,13 +1,18 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { UserCheck, FileDown, Calendar, Filter, Search } from 'lucide-react';
+import { UserCheck, FileDown, Calendar, Filter, Search, FileText, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Table, 
   TableBody, 
@@ -17,51 +22,77 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { getTeacherAttendanceReports, getTeacherDashboard, getUserInfo, exportAttendanceReport } from '@/services/api';
+import { format } from 'date-fns';
 
 const TeacherReports = () => {
-  const [selectedTab, setSelectedTab] = useState('daily');
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedTab, setSelectedTab] = useState<'daily' | 'monthly'>('daily');
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [selectedBatch, setSelectedBatch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [teacherName, setTeacherName] = useState('');
+  const [batches, setBatches] = useState<Array<{ id: number; name: string }>>([]);
+  const [reports, setReports] = useState<any>({ records: [], summary: [] });
 
-  // Mock data for attendance reports
-  const attendanceData = [
-    { id: 1, name: 'Arjun Mehta', date: '2023-06-01', status: 'present', batch: 'Morning Batch', time: '10:00 AM' },
-    { id: 2, name: 'Priya Singh', date: '2023-06-01', status: 'absent', batch: 'Morning Batch', time: '10:00 AM' },
-    { id: 3, name: 'Rahul Kumar', date: '2023-06-01', status: 'present', batch: 'Evening Batch', time: '4:00 PM' },
-    { id: 4, name: 'Neha Sharma', date: '2023-06-01', status: 'present', batch: 'Evening Batch', time: '4:00 PM' },
-    { id: 5, name: 'Vikram Patel', date: '2023-06-01', status: 'absent', batch: 'Morning Batch', time: '10:00 AM' },
-    { id: 6, name: 'Ananya Gupta', date: '2023-06-02', status: 'present', batch: 'Morning Batch', time: '10:00 AM' },
-    { id: 7, name: 'Sanjay Joshi', date: '2023-06-02', status: 'present', batch: 'Evening Batch', time: '4:00 PM' },
-    { id: 8, name: 'Divya Reddy', date: '2023-06-02', status: 'absent', batch: 'Evening Batch', time: '4:00 PM' },
-  ];
+  // Fetch user info
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const data = await getUserInfo();
+        setTeacherName(`${data.first_name} ${data.last_name}`);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        setTeacherName('Teacher');
+      }
+    };
 
-  // Mock data for monthly summary
-  const monthlySummary = [
-    { id: 1, name: 'Arjun Mehta', totalClasses: 22, attended: 20, percentage: 90.9, batch: 'Morning Batch' },
-    { id: 2, name: 'Priya Singh', totalClasses: 22, attended: 18, percentage: 81.8, batch: 'Morning Batch' },
-    { id: 3, name: 'Rahul Kumar', totalClasses: 22, attended: 22, percentage: 100, batch: 'Evening Batch' },
-    { id: 4, name: 'Neha Sharma', totalClasses: 22, attended: 19, percentage: 86.4, batch: 'Evening Batch' },
-    { id: 5, name: 'Vikram Patel', totalClasses: 22, attended: 15, percentage: 68.2, batch: 'Morning Batch' },
-    { id: 6, name: 'Ananya Gupta', totalClasses: 22, attended: 21, percentage: 95.5, batch: 'Morning Batch' },
-    { id: 7, name: 'Sanjay Joshi', totalClasses: 22, attended: 17, percentage: 77.3, batch: 'Evening Batch' },
-    { id: 8, name: 'Divya Reddy', totalClasses: 22, attended: 20, percentage: 90.9, batch: 'Evening Batch' },
-  ];
+    fetchUserInfo();
+  }, []);
 
-  // Filter and search functionality based on batch selection as well
-  const filteredDailyData = attendanceData.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.batch.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBatch = selectedBatch ? student.batch.toLowerCase().includes(selectedBatch.toLowerCase()) : true;
-    return matchesSearch && matchesBatch;
-  });
+  // Fetch batches
+  useEffect(() => {
+    const fetchBatches = async () => {
+      try {
+        const data = await getTeacherDashboard();
+        setBatches(data.batches);
+      } catch (error) {
+        console.error('Error fetching batches:', error);
+        toast.error('Failed to load batches');
+      }
+    };
 
-  const filteredMonthlyData = monthlySummary.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.batch.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBatch = selectedBatch ? student.batch.toLowerCase().includes(selectedBatch.toLowerCase()) : true;
-    return matchesSearch && matchesBatch;
-  });
+    fetchBatches();
+  }, []);
+
+  // Fetch reports when tab, month, batch, or search changes
+  useEffect(() => {
+    const fetchReports = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getTeacherAttendanceReports({
+          view: selectedTab,
+          month: selectedMonth,
+          ...(selectedBatch !== 'all' && { batch: selectedBatch }),
+          ...(searchQuery && { search: searchQuery })
+        });
+        setReports(data);
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+        toast.error('Failed to load attendance reports');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Add a small delay to avoid too many API calls while typing
+    const timeoutId = setTimeout(fetchReports, 300);
+    return () => clearTimeout(timeoutId);
+  }, [selectedTab, selectedMonth, selectedBatch, searchQuery]);
+
+  // Use the filtered data directly from the API response
+  const dailyData = reports.records || [];
+  const monthlyData = reports.summary || [];
 
   // Navigation items for teacher
   const teacherNavItems = [
@@ -77,29 +108,60 @@ const TeacherReports = () => {
     }
   ];
 
-  const handleDownloadReport = () => {
-    const reportType = selectedTab === 'daily' ? 'Daily Attendance' : 'Monthly Summary';
-    const monthText = selectedMonth ? ` for ${selectedMonth}` : '';
-    const batchText = selectedBatch ? ` (${selectedBatch})` : '';
-    
-    toast.success(`${reportType} report${monthText}${batchText} downloaded successfully!`);
+  const handleDownloadReport = async (exportFormat: 'csv' | 'pdf') => {
+    try {
+      const response = await exportAttendanceReport({
+        view: selectedTab,
+        month: selectedMonth,
+        format: exportFormat,
+        ...(selectedBatch !== 'all' && { batch: selectedBatch }),
+        ...(searchQuery && { search: searchQuery })
+      });
+
+      // Create a blob and download the file
+      const blob = new Blob([response], { type: exportFormat === 'pdf' ? 'application/pdf' : 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_report_${selectedMonth}_${selectedTab}.${exportFormat}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Report downloaded successfully as ${exportFormat.toUpperCase()}!`);
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast.error(`Failed to download ${exportFormat.toUpperCase()} report`);
+    }
   };
 
   return (
-    <Layout navItems={teacherNavItems} role="teacher" userName="Rajesh Kumar">
+    <Layout navItems={teacherNavItems} role="teacher" userName={teacherName}>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
           <div>
             <h1 className="text-3xl font-kollektif text-foreground">Attendance Reports</h1>
             <p className="text-muted-foreground mt-1">View and analyze student attendance data</p>
           </div>
-          <Button 
-            onClick={handleDownloadReport} 
-            className="bg-brand-orange hover:bg-brand-orange/90 animated-btn"
-          >
-            <FileDown className="mr-2 h-4 w-4" />
-            Export Report
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-brand-orange hover:bg-brand-orange/90 animated-btn">
+                <Download className="mr-2 h-4 w-4" />
+                Export Report
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleDownloadReport('csv')}>
+                <FileDown className="mr-2 h-4 w-4" />
+                Download CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDownloadReport('pdf')}>
+                <FileText className="mr-2 h-4 w-4" />
+                Download PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
@@ -115,25 +177,12 @@ const TeacherReports = () => {
           
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Select month" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="january">January</SelectItem>
-                <SelectItem value="february">February</SelectItem>
-                <SelectItem value="march">March</SelectItem>
-                <SelectItem value="april">April</SelectItem>
-                <SelectItem value="may">May</SelectItem>
-                <SelectItem value="june">June</SelectItem>
-                <SelectItem value="july">July</SelectItem>
-                <SelectItem value="august">August</SelectItem>
-                <SelectItem value="september">September</SelectItem>
-                <SelectItem value="october">October</SelectItem>
-                <SelectItem value="november">November</SelectItem>
-                <SelectItem value="december">December</SelectItem>
-              </SelectContent>
-            </Select>
+            <Input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full md:w-[180px]"
+            />
           </div>
           
           <div className="flex items-center gap-2 w-full md:w-auto">
@@ -143,15 +192,18 @@ const TeacherReports = () => {
                 <SelectValue placeholder="Filter by batch" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="morning">Morning Batch</SelectItem>
-                <SelectItem value="afternoon">Afternoon Batch</SelectItem>
-                <SelectItem value="evening">Evening Batch</SelectItem>
+                <SelectItem value="all">All Batches</SelectItem>
+                {batches.map(batch => (
+                  <SelectItem key={batch.id} value={batch.id.toString()}>
+                    {batch.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        <Tabs defaultValue="daily" className="space-y-4" onValueChange={setSelectedTab}>
+        <Tabs defaultValue="daily" className="space-y-4" onValueChange={(value) => setSelectedTab(value as 'daily' | 'monthly')}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="daily">Daily Attendance</TabsTrigger>
             <TabsTrigger value="monthly">Monthly Summary</TabsTrigger>
@@ -163,40 +215,47 @@ const TeacherReports = () => {
                 <CardTitle className="text-lg font-medium">Daily Attendance Record</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Batch</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredDailyData.length > 0 ? (
-                      filteredDailyData.map((student) => (
-                        <TableRow key={`${student.id}-${student.date}`}>
-                          <TableCell className="font-medium">{student.name}</TableCell>
-                          <TableCell>{student.batch}</TableCell>
-                          <TableCell>{new Date(student.date).toLocaleDateString()}</TableCell>
-                          <TableCell>{student.time}</TableCell>
-                          <TableCell>
-                            <Badge variant={student.status === 'present' ? 'default' : 'destructive'} className={student.status === 'present' ? 'bg-green-500' : ''}>
-                              {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
-                            </Badge>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-orange"></div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Batch</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dailyData.length > 0 ? (
+                        dailyData.map((record: any, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{record.name}</TableCell>
+                            <TableCell>{record.batch}</TableCell>
+                            <TableCell>{format(new Date(record.date), 'dd/MM/yyyy')}</TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={record.status === 'Present' ? 'default' : 'destructive'} 
+                                className={record.status === 'Present' ? 'bg-green-500' : ''}
+                              >
+                                {record.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-6">
+                            No attendance records found
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
-                          No attendance records found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -207,49 +266,55 @@ const TeacherReports = () => {
                 <CardTitle className="text-lg font-medium">Monthly Attendance Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Batch</TableHead>
-                      <TableHead>Total Classes</TableHead>
-                      <TableHead>Classes Attended</TableHead>
-                      <TableHead>Attendance %</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMonthlyData.length > 0 ? (
-                      filteredMonthlyData.map((student) => (
-                        <TableRow key={student.id}>
-                          <TableCell className="font-medium">{student.name}</TableCell>
-                          <TableCell>{student.batch}</TableCell>
-                          <TableCell>{student.totalClasses}</TableCell>
-                          <TableCell>{student.attended}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="outline" 
-                              className={`${
-                                student.percentage >= 90 
-                                  ? 'bg-green-50 text-green-700 border-green-200' 
-                                  : student.percentage >= 75 
-                                    ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
-                                    : 'bg-red-50 text-red-700 border-red-200'
-                              }`}
-                            >
-                              {student.percentage}%
-                            </Badge>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-orange"></div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Batch</TableHead>
+                        <TableHead>Total Classes</TableHead>
+                        <TableHead>Classes Attended</TableHead>
+                        <TableHead>Attendance %</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {monthlyData.length > 0 ? (
+                        monthlyData.map((record: any, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{record.name}</TableCell>
+                            <TableCell>{record.batch}</TableCell>
+                            <TableCell>{record.total_classes}</TableCell>
+                            <TableCell>{record.classes_attended}</TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={`${
+                                  record.attendance_percentage >= 90 
+                                    ? 'bg-green-50 text-green-700 border-green-200' 
+                                    : record.attendance_percentage >= 75 
+                                      ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+                                      : 'bg-red-50 text-red-700 border-red-200'
+                                }`}
+                              >
+                                {record.attendance_percentage}%
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                            No summary records found
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
-                          No summary records found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

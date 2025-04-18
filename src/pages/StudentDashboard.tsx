@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, CreditCard, User, Home } from 'lucide-react';
 import StudentOverviewTab from '@/components/student/StudentOverviewTab';
 import StudentReportsTab from '@/components/student/StudentReportsTab';
 import StudentPaymentsTab from '@/components/student/StudentPaymentsTab';
 import { getStudentDashboard } from '@/services/api';
 import { toast } from 'sonner';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface StudentDashboardData {
   student_name: string;
@@ -31,9 +31,14 @@ interface StudentDashboardData {
 }
 
 const StudentDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const location = useLocation();
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Get current tab from URL search params
+  const searchParams = new URLSearchParams(location.search);
+  const currentTab = searchParams.get('tab') || 'overview';
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -53,10 +58,9 @@ const StudentDashboard = () => {
 
   // Navigation items for the sidebar
   const navItems = [
-    { href: '/student-dashboard', label: 'Dashboard', icon: <Home size={20} /> },
+    { href: '/student-dashboard', label: 'Overview', icon: <Home size={20} /> },
     { href: '/student-dashboard?tab=reports', label: 'Download Reports', icon: <FileText size={20} /> },
     { href: '/student-dashboard?tab=payments', label: 'Payments', icon: <CreditCard size={20} /> },
-    { href: '/student-profile', label: 'Profile', icon: <User size={20} /> },
   ];
 
   if (isLoading) {
@@ -79,6 +83,32 @@ const StudentDashboard = () => {
     );
   }
 
+  const renderContent = () => {
+    switch (currentTab) {
+      case 'reports':
+        return <StudentReportsTab />;
+      case 'payments':
+        return (
+          <StudentPaymentsTab 
+            pendingPayments={dashboardData.pending_payments_count}
+            approvedPayments={dashboardData.approved_payments_count}
+            rejectedPayments={dashboardData.rejected_payments_count}
+            totalPaid={dashboardData.total_paid}
+            activePaymentWindows={dashboardData.active_payment_windows}
+          />
+        );
+      default:
+        return (
+          <StudentOverviewTab 
+            attendanceRate={dashboardData.attendance_rate}
+            totalClasses={dashboardData.total_classes}
+            presentClasses={dashboardData.present_classes}
+            batches={dashboardData.batches}
+          />
+        );
+    }
+  };
+
   return (
     <Layout navItems={navItems} role="student" userName={dashboardData.student_name}>
       <div className="space-y-8">
@@ -87,36 +117,9 @@ const StudentDashboard = () => {
           <p className="text-muted-foreground">Welcome back, {dashboardData.student_name}! Here's your attendance overview.</p>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-3 mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="overview">
-            <StudentOverviewTab 
-              attendanceRate={dashboardData.attendance_rate}
-              totalClasses={dashboardData.total_classes}
-              presentClasses={dashboardData.present_classes}
-              batches={dashboardData.batches}
-            />
-          </TabsContent>
-          
-          <TabsContent value="reports">
-            <StudentReportsTab />
-          </TabsContent>
-          
-          <TabsContent value="payments">
-            <StudentPaymentsTab 
-              pendingPayments={dashboardData.pending_payments_count}
-              approvedPayments={dashboardData.approved_payments_count}
-              rejectedPayments={dashboardData.rejected_payments_count}
-              totalPaid={dashboardData.total_paid}
-              activePaymentWindows={dashboardData.active_payment_windows}
-            />
-          </TabsContent>
-        </Tabs>
+        <div className="animate-fade-in">
+          {renderContent()}
+        </div>
       </div>
     </Layout>
   );

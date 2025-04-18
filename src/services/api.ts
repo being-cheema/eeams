@@ -109,4 +109,118 @@ export const getPaymentHistory = async (): Promise<{
     },
   });
   return response.data;
+};
+
+// Teacher API functions
+export const getTeacherDashboard = async () => {
+  const response = await axios.get(`${API_BASE_URL}/teacher/dashboard/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return response.data;
+};
+
+export const getBatchStudents = async (batchId: number) => {
+  const response = await axios.get(`${API_BASE_URL}/teacher/batch/${batchId}/students/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return response.data;
+};
+
+export const markAttendance = async (data: {
+  batch_id: number;
+  date: string;
+  attendance: Array<{
+    student_id: number;
+    status: 'P' | 'A' | 'L';
+    remarks: string;
+  }>;
+}) => {
+  const response = await axios.post(`${API_BASE_URL}/teacher/attendance/mark/`, data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return response.data;
+};
+
+export const getTeacherAttendanceReports = async (params: {
+  view: 'daily' | 'monthly';
+  month: string;
+  batch?: string;
+  search?: string;
+  format?: 'json' | 'csv' | 'pdf';
+}) => {
+  const { view, month, batch, search, format = 'json' } = params;
+  // Extract year and month from the full date if provided
+  const monthParam = month.split('-').slice(0, 2).join('-');
+  
+  const response = await axios.get(`${API_BASE_URL}/teacher/attendance/reports/`, {
+    params: {
+      view,
+      month: monthParam,
+      ...(batch && batch !== 'all' && { batch }),
+      ...(search && { search }),
+      ...(format !== 'json' && { format })
+    },
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    ...(format === 'pdf' && { responseType: 'blob' })
+  });
+
+  if (format === 'pdf') {
+    return response.data;
+  }
+  
+  return response.data;
+};
+
+export const getTodayAttendance = async () => {
+  const response = await axios.get(`${API_BASE_URL}/attendance/today/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return response.data;
+};
+
+export const getUserInfo = async () => {
+  const response = await axios.get(`${API_BASE_URL}/user/info/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return response.data;
+};
+
+export const exportAttendanceReport = async (params: {
+  view: 'daily' | 'monthly';
+  month: string;
+  format: 'pdf' | 'csv';
+  batch?: string;
+  search?: string;
+}) => {
+  const { view, month, format, batch, search } = params;
+  // Extract year and month from the full date if provided
+  const monthParam = month.split('-').slice(0, 2).join('-');
+  
+  const response = await axios.get(`${API_BASE_URL}/teacher/attendance/export/`, {
+    params: {
+      view,
+      month: monthParam,
+      out: format,
+      ...(batch && batch !== 'all' && { batch }),
+      ...(search && { search })
+    },
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    responseType: 'blob'
+  });
+  
+  return response.data;
 }; 

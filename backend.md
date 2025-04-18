@@ -66,6 +66,30 @@ Content-Type: application/json
 }
 ```
 
+Response:
+```json
+{
+    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### Refresh Token
+```http
+POST /api/token/refresh/
+Content-Type: application/json
+
+{
+    "refresh": "your_refresh_token"
+}
+```
+
+Response:
+```json
+{
+    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
 
 ### User Management
 
@@ -80,6 +104,14 @@ Authorization: Bearer your_access_token
     "password": "userpassword",
     "first_name": "name",
     "last_name": "name"  
+}
+```
+
+Response:
+```json
+{
+    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
@@ -103,10 +135,26 @@ Response:
 
 #### Get Attendance Report
 ```http
-GET /api/get-report/??start_date=2025-01-01&end_date=2025-03-30&output=pdf
+GET /api/get-report/?start_date=2025-01-01&end_date=2025-03-30&output=pdf
 Authorization: Bearer your_access_token
 ```
 Output options - pdf/csv/json
+
+Response (JSON format):
+```json
+[
+    {
+        "id": 1,
+        "date": "2025-01-15",
+        "student": 3,
+        "batch": 1,
+        "status": "P",
+        "remarks": "On time",
+        "marked_by": 2,
+        "created_at": "2025-01-15T10:30:00Z"
+    }
+]
+```
 
 ### Teacher Endpoints
 
@@ -116,10 +164,48 @@ GET /api/teacher/dashboard/
 Authorization: Bearer your_access_token
 ```
 
+Response:
+```json
+{
+    "batches": [
+        {
+            "id": 1,
+            "name": "Morning Batch",
+            "student_count": 25,
+            "students": [
+                {
+                    "id": 3,
+                    "name": "John Doe",
+                    "attendance_percentage": 85.5,
+                    "present_classes": 17,
+                    "total_classes": 20
+                }
+            ],
+            "fee_projection": 25000
+        }
+    ]
+}
+```
+
 #### Get Batch Students
 ```http
-GET /api/teacher/batch/{batch_id}/students/
+GET /api/teacher/batch/1/students/
 Authorization: Bearer your_access_token
+```
+
+Response:
+```json
+{
+    "batch_id": 1,
+    "batch_name": "Morning Batch",
+    "students": [
+        {
+            "id": 3,
+            "name": "John Doe",
+            "email": "john@example.com"
+        }
+    ]
+}
 ```
 
 #### Mark Attendance
@@ -134,13 +220,92 @@ Authorization: Bearer your_access_token
     "attendance_data": [
         {
             "student_id": 1,
-            "status": "P",  // P: Present, A: Absent, L: Leave
+            "status": "P",  // P: Present, A: Absent, L: Late
             "remarks": "Optional remarks"
         }
-        // ... more students
     ]
 }
 ```
+
+Response:
+```json
+{
+    "message": "Attendance marked successfully",
+    "records": [
+        {
+            "student_id": 1,
+            "status": "P",
+            "created": true
+        }
+    ]
+}
+```
+
+#### Get Attendance Reports (Daily)
+```http
+GET /api/teacher/attendance/reports/?view=daily&month=2025-03
+Authorization: Bearer your_access_token
+```
+
+Response:
+```json
+{
+    "records": [
+        {
+            "name": "John Doe",
+            "batch": "Morning Batch",
+            "date": "2025-03-15",
+            "time": "10:00 AM",
+            "status": "Present",
+            "status_code": "P"
+        },
+        {
+            "name": "Jane Smith",
+            "batch": "Evening Batch",
+            "date": "2025-03-15",
+            "time": "4:00 PM",
+            "status": "Absent",
+            "status_code": "A"
+        }
+    ]
+}
+```
+
+#### Get Attendance Reports (Monthly)
+```http
+GET /api/teacher/attendance/reports/?view=monthly&month=2025-03
+Authorization: Bearer your_access_token
+```
+
+Response:
+```json
+{
+    "summary": [
+        {
+            "name": "John Doe",
+            "batch": "Morning Batch",
+            "total_classes": 20,
+            "classes_attended": 18,
+            "attendance_percentage": 90.0
+        },
+        {
+            "name": "Jane Smith",
+            "batch": "Evening Batch",
+            "total_classes": 15,
+            "classes_attended": 12,
+            "attendance_percentage": 80.0
+        }
+    ]
+}
+```
+
+#### Export Attendance Reports
+```http
+GET /api/teacher/attendance/export/?view=monthly&format=pdf&month=2025-03
+Authorization: Bearer your_access_token
+```
+
+Response: PDF or CSV file download
 
 ### Student Endpoints
 
@@ -154,6 +319,7 @@ Response:
 ```json
 {
     "student_name": "John Doe",
+    "email": "john@example.com",
     "attendance_rate": 85.5,
     "total_classes": 20,
     "present_classes": 17,
@@ -189,6 +355,7 @@ Response:
 ```json
 {
     "student_name": "John Doe",
+    "email": "john@example.com",
     "payment_history": [
         {
             "payment_id": 5,
@@ -246,6 +413,17 @@ Authorization: Bearer your_access_token
 {
     "window_id": 1,
     "image_proof": <file>
+}
+```
+
+Response:
+```json
+{
+    "message": "Payment submitted successfully",
+    "payment_id": 7,
+    "batch": "Batch A",
+    "amount": 1000.00,
+    "status": "Pending"
 }
 ```
 
