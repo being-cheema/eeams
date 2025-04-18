@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { X, Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logout } from '@/services/api';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +23,10 @@ const Layout: React.FC<LayoutProps> = ({ children, navItems, role = 'student', u
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -82,7 +86,7 @@ const Layout: React.FC<LayoutProps> = ({ children, navItems, role = 'student', u
               </div>
               <Button variant="outline" className="w-full flex items-center gap-2 border-brand-orange/20 text-brand-orange hover:text-brand-orange hover:bg-brand-orange/5">
                 <LogOut size={16} />
-                <span>Logout</span>
+                <span onClick={handleLogout}>Logout</span>
               </Button>
             </div>
           </Sidebar>
@@ -134,7 +138,7 @@ const Layout: React.FC<LayoutProps> = ({ children, navItems, role = 'student', u
                 </div>
                 <Button variant="outline" className="w-full flex items-center gap-2 border-brand-orange/20 text-brand-orange hover:text-brand-orange hover:bg-brand-orange/5">
                   <LogOut size={16} />
-                  <span>Logout</span>
+                  <span onClick={handleLogout}>Logout</span>
                 </Button>
               </div>
             </div>

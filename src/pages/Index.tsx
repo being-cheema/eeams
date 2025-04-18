@@ -1,59 +1,122 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Mail, Lock, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import axios from 'axios';
+import { checkAuth } from '@/services/api';
+
+const API_BASE_URL = 'http://localhost:8000/api';
 
 const Index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [userType, setUserType] = useState<'student' | 'teacher' | 'admin'>('student');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkTokenAndRedirect = async () => {
+      try {
+        const isValid = await checkAuth();
+        if (isValid) {
+          const response = await axios.get(`${API_BASE_URL}/user/info/`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+          
+          const { role } = response.data;
+          switch(role) {
+            case 'STU':
+              navigate('/student-dashboard');
+              break;
+            case 'TEA':
+              navigate('/teacher-dashboard');
+              break;
+            case 'ADM':
+              window.location.href = 'http://localhost:8000/admin';
+              break;
+          }
+        }
+      } catch (error) {
+        console.error('Token validation error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkTokenAndRedirect();
+  }, [navigate]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Get JWT token
+      const tokenResponse = await axios.post(`${API_BASE_URL}/token/`, {
+        email,
+        password
+      });
+
+      const { access } = tokenResponse.data;
       
-      if (email && password) {
-        // For demo purposes, route based on userType
-        switch(userType) {
-          case 'student':
-            navigate('/student-dashboard');
-            break;
-          case 'teacher':
-            navigate('/teacher-dashboard');
-            break;
-          case 'admin':
-            navigate('/admin-dashboard');
-            break;
+      // Store token
+      localStorage.setItem('token', access);
+      
+      // Get user info
+      const userResponse = await axios.get(`${API_BASE_URL}/user/info/`, {
+        headers: {
+          Authorization: `Bearer ${access}`
         }
-        
-        toast.success(`Logged in as ${userType}`);
-      } else {
-        toast.error('Please enter email and password');
+      });
+
+      const { role } = userResponse.data;
+      
+      // Redirect based on role
+      switch(role) {
+        case 'STU':
+          navigate('/student-dashboard');
+          break;
+        case 'TEA':
+          navigate('/teacher-dashboard');
+          break;
+        case 'ADM':
+          window.location.href = 'http://localhost:8000/admin';
+          return;
+        default:
+          throw new Error('Invalid user role');
       }
-    }, 1500);
+      
+      toast.success(`Logged in successfully`);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // For demo, login as different user types
   const handleQuickLogin = (type: 'student' | 'teacher' | 'admin') => {
-    setUserType(type);
     setEmail(`${type}@example.com`);
     setPassword('password');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-orange"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
