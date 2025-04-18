@@ -187,42 +187,7 @@ const Index = () => {
             </form>
           </div>
           
-          <div className="text-center text-sm">
-            <p className="text-muted-foreground">
-              Don't have an account? <a href="#" className="text-brand-orange hover:underline">Sign Up</a>
-            </p>
-          </div>
-          
           {/* Demo Quick Login */}
-          <div className="bg-white/50 rounded-lg p-4 border border-border/50">
-            <p className="text-xs text-center mb-3 text-muted-foreground">Quick Login for Demo</p>
-            <div className="flex gap-2 justify-center">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleQuickLogin('student')}
-                className="text-xs"
-              >
-                Student
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleQuickLogin('teacher')}
-                className="text-xs"
-              >
-                Teacher
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleQuickLogin('admin')}
-                className="text-xs"
-              >
-                Admin
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
       
