@@ -212,7 +212,7 @@ export const exportAttendanceReport = async (params: {
     params: {
       view,
       month: monthParam,
-      out: format,
+      format,
       ...(batch && batch !== 'all' && { batch }),
       ...(search && { search })
     },
@@ -222,5 +222,19 @@ export const exportAttendanceReport = async (params: {
     responseType: 'blob'
   });
   
+  return response.data;
+};
+
+export const requestPasswordReset = async (email: string) => {
+  const response = await api.post('/users/password-reset/', { email });
+  return response.data;
+};
+
+export const confirmPasswordReset = async (uid: string, token: string, newPassword: string) => {
+  const response = await api.post('/users/password-reset/confirm/', {
+    uid,
+    token,
+    new_password: newPassword
+  });
   return response.data;
 }; 

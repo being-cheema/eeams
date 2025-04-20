@@ -15,6 +15,7 @@ interface StudentPaymentsTabProps {
     end_date: string;
     amount: number;
   }>;
+  studentName: string;
 }
 
 const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
@@ -23,11 +24,12 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
   rejectedPayments,
   totalPaid,
   activePaymentWindows,
+  studentName,
 }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <PaymentQRSection activePaymentWindows={activePaymentWindows} />
+        <PaymentQRSection activePaymentWindows={activePaymentWindows} studentName={studentName} />
         <PaymentProofUploader activePaymentWindows={activePaymentWindows} />
       </div>
       

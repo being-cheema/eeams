@@ -153,27 +153,31 @@ const Index = () => {
               </div>
               
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a href="#" className="text-xs text-brand-orange hover:underline">Forgot Password?</a>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
-                    className="pl-10"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                   <button
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
+                </div>
+                <div className="flex justify-end">
+                  <a 
+                    href="/password-reset" 
+                    className="text-sm text-brand-orange hover:text-brand-orange/80"
+                  >
+                    Forgot password?
+                  </a>
                 </div>
               </div>
               
@@ -187,7 +191,6 @@ const Index = () => {
             </form>
           </div>
           
-          {/* Demo Quick Login */}
         </div>
       </div>
       

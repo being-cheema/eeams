@@ -12,9 +12,10 @@ interface PaymentWindow {
 
 interface PaymentQRSectionProps {
   activePaymentWindows: PaymentWindow[];
+  studentName: string;
 }
 
-const PaymentQRSection: React.FC<PaymentQRSectionProps> = ({ activePaymentWindows }) => {
+const PaymentQRSection: React.FC<PaymentQRSectionProps> = ({ activePaymentWindows, studentName }) => {
   const activeWindow = activePaymentWindows.length > 0 ? activePaymentWindows[0] : null;
 
   if (!activeWindow) {
@@ -33,7 +34,7 @@ const PaymentQRSection: React.FC<PaymentQRSectionProps> = ({ activePaymentWindow
       <CardHeader>
         <CardTitle>Active Payment Window</CardTitle>
         <CardDescription>
-          Current payment window for {activeWindow.batch_name}
+          Current payment window for {studentName}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

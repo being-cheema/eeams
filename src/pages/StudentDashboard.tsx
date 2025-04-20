@@ -95,6 +95,7 @@ const StudentDashboard = () => {
             rejectedPayments={dashboardData.rejected_payments_count}
             totalPaid={dashboardData.total_paid}
             activePaymentWindows={dashboardData.active_payment_windows}
+            studentName={dashboardData.student_name}
           />
         );
       default:
