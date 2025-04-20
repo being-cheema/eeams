@@ -113,7 +113,7 @@ const TeacherReports = () => {
       const response = await exportAttendanceReport({
         view: selectedTab,
         month: selectedMonth,
-        format: exportFormat,
+        out: exportFormat,
         ...(selectedBatch !== 'all' && { batch: selectedBatch }),
         ...(searchQuery && { search: searchQuery })
       });

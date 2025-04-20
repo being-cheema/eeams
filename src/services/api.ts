@@ -152,9 +152,9 @@ export const getTeacherAttendanceReports = async (params: {
   month: string;
   batch?: string;
   search?: string;
-  format?: 'json' | 'csv' | 'pdf';
+  out?: 'json' | 'csv' | 'pdf';
 }) => {
-  const { view, month, batch, search, format = 'json' } = params;
+  const { view, month, batch, search, out = 'json' } = params;
   // Extract year and month from the full date if provided
   const monthParam = month.split('-').slice(0, 2).join('-');
   
@@ -164,15 +164,15 @@ export const getTeacherAttendanceReports = async (params: {
       month: monthParam,
       ...(batch && batch !== 'all' && { batch }),
       ...(search && { search }),
-      ...(format !== 'json' && { format })
+      ...(out !== 'json' && { out })
     },
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
-    ...(format === 'pdf' && { responseType: 'blob' })
+    ...(out === 'pdf' && { responseType: 'blob' })
   });
 
-  if (format === 'pdf') {
+  if (out === 'pdf') {
     return response.data;
   }
   
@@ -200,11 +200,11 @@ export const getUserInfo = async () => {
 export const exportAttendanceReport = async (params: {
   view: 'daily' | 'monthly';
   month: string;
-  format: 'pdf' | 'csv';
+  out: 'pdf' | 'csv';
   batch?: string;
   search?: string;
 }) => {
-  const { view, month, format, batch, search } = params;
+  const { view, month, out, batch, search } = params;
   // Extract year and month from the full date if provided
   const monthParam = month.split('-').slice(0, 2).join('-');
   
@@ -212,7 +212,7 @@ export const exportAttendanceReport = async (params: {
     params: {
       view,
       month: monthParam,
-      format,
+      out,
       ...(batch && batch !== 'all' && { batch }),
       ...(search && { search })
     },

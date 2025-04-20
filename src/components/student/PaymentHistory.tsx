@@ -101,7 +101,6 @@ const PaymentHistory = () => {
             <thead>
               <tr className="text-left text-muted-foreground text-sm border-b">
                 <th className="pb-2 font-medium">Date</th>
-                <th className="pb-2 font-medium">Batch</th>
                 <th className="pb-2 font-medium">Amount</th>
                 <th className="pb-2 font-medium">Status</th>
               </tr>
@@ -110,7 +109,6 @@ const PaymentHistory = () => {
               {historyData.payment_history.map((record) => (
                 <tr key={record.payment_id} className="border-b border-border/50 last:border-0">
                   <td className="py-3">{formatDate(record.date)}</td>
-                  <td className="py-3">{record.batch_name}</td>
                   <td className="py-3">₹{record.amount.toLocaleString()}</td>
                   <td className="py-3">
                     <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(record.status)}`}>
