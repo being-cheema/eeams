@@ -77,6 +77,7 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [isAttendanceMarked, setIsAttendanceMarked] = useState<Record<number, boolean>>({});
   const [teacherName, setTeacherName] = useState('');
+  const [classRemark, setClassRemark] = useState('');
 
   // Fetch user info on component mount
   useEffect(() => {
@@ -210,7 +211,8 @@ const TeacherDashboard = () => {
       await markAttendance({
         batch_id: parseInt(selectedBatch),
         date: attendanceDate,
-        attendance: attendanceData
+        attendance: attendanceData,
+        class_remark: classRemark
       });
 
       toast.success('Attendance marked successfully!');
@@ -218,8 +220,9 @@ const TeacherDashboard = () => {
       // Refresh today's attendance after marking
       await fetchTodayAttendance();
       
-      // Reset attendance status
+      // Reset attendance status and class remark
       setAttendanceStatus({});
+      setClassRemark('');
     } catch (error) {
       console.error('Error marking attendance:', error);
       toast.error('Failed to mark attendance');
@@ -376,6 +379,16 @@ const TeacherDashboard = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="classRemark">Class Remark</Label>
+                  <Input
+                    id="classRemark"
+                    placeholder="Add a remark for the entire class..."
+                    value={classRemark}
+                    onChange={(e) => setClassRemark(e.target.value)}
+                  />
                 </div>
                 
                 <Table>

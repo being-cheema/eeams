@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PaymentQRSection from './PaymentQRSection';
 import PaymentProofUploader from './PaymentProofUploader';
 import PaymentHistory from './PaymentHistory';
+import { getActivePaymentWindows } from '@/services/api';
 
 interface StudentPaymentsTabProps {
   pendingPayments: number;
@@ -26,10 +27,29 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
   activePaymentWindows,
   studentName,
 }) => {
+  const [totalPendingFee, setTotalPendingFee] = useState(0);
+
+  useEffect(() => {
+    const fetchTotalPendingFee = async () => {
+      try {
+        const data = await getActivePaymentWindows();
+        setTotalPendingFee(data.total_pending_fee);
+      } catch (error) {
+        console.error('Error fetching total pending fee:', error);
+      }
+    };
+
+    fetchTotalPendingFee();
+  }, []);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <PaymentQRSection activePaymentWindows={activePaymentWindows} studentName={studentName} />
+        <PaymentQRSection 
+          activePaymentWindows={activePaymentWindows} 
+          studentName={studentName} 
+          totalPendingFee={totalPendingFee}
+        />
         <PaymentProofUploader activePaymentWindows={activePaymentWindows} />
       </div>
       

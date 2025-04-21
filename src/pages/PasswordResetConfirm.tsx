@@ -38,7 +38,18 @@ const PasswordResetConfirm = () => {
       navigate('/');
     } catch (error) {
       console.error('Error resetting password:', error);
-      toast.error('Failed to reset password');
+      
+      // Extract the specific error message from the server response
+      let errorMessage = 'Failed to reset password';
+      if (error.response?.data?.error && Array.isArray(error.response.data.error)) {
+        errorMessage = error.response.data.error[0];
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

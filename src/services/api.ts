@@ -55,7 +55,18 @@ export const getStudentPaymentHistory = async () => {
   return response.data;
 };
 
-export const getActivePaymentWindows = async () => {
+export const getActivePaymentWindows = async (): Promise<{
+  payment_windows: Array<{
+    window_id: number;
+    batch_name: string;
+    start_date: string;
+    end_date: string;
+    amount: number;
+    payment_status: string;
+    payment_id: number | null;
+  }>;
+  total_pending_fee: number;
+}> => {
   const response = await api.get('/student/payment/');
   return response.data;
 };
@@ -138,6 +149,7 @@ export const markAttendance = async (data: {
     status: 'P' | 'A' | 'L';
     remarks: string;
   }>;
+  class_remark?: string;
 }) => {
   const response = await axios.post(`${API_BASE_URL}/teacher/attendance/mark/`, data, {
     headers: {

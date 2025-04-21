@@ -223,7 +223,8 @@ Authorization: Bearer your_access_token
             "status": "P",  // P: Present, A: Absent, L: Late
             "remarks": "Optional remarks"
         }
-    ]
+    ],
+    "class_remark": "somehrieh"
 }
 ```
 
@@ -400,7 +401,8 @@ Response:
             "payment_status": "Not Paid",
             "payment_id": null
         }
-    ]
+    ],
+    "total_pending_fee": 900
 }
 ```
 

@@ -8,7 +8,6 @@ import NotFound from "./pages/NotFound";
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import TeacherReports from "./pages/TeacherReports";
-import AdminDashboard from "./pages/AdminDashboard";
 import PasswordResetRequest from "./pages/PasswordResetRequest";
 import PasswordResetConfirm from "./pages/PasswordResetConfirm";
 
@@ -25,7 +24,6 @@ const App = () => (
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
           <Route path="/teacher-reports" element={<TeacherReports />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/password-reset" element={<PasswordResetRequest />} />
           <Route path="/reset-password" element={<PasswordResetConfirm />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
