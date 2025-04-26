@@ -78,6 +78,7 @@ const TeacherDashboard = () => {
   const [isAttendanceMarked, setIsAttendanceMarked] = useState<Record<number, boolean>>({});
   const [teacherName, setTeacherName] = useState('');
   const [classRemark, setClassRemark] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Fetch user info on component mount
   useEffect(() => {
@@ -266,6 +267,15 @@ const TeacherDashboard = () => {
     }
   }, [todayAttendance]);
 
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    
+    return () => clearInterval(timer);
+  }, []);
+
   if (isLoading) {
     return (
       <Layout navItems={teacherNavItems} role="teacher" userName="Loading...">
@@ -351,7 +361,12 @@ const TeacherDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Mark Student Attendance</CardTitle>
-                <CardDescription>Select a batch and mark attendance for today</CardDescription>
+                <CardDescription>
+                  Select a batch and mark attendance for today ({format(new Date(attendanceDate), 'EEEE, MMMM d, yyyy')})
+                </CardDescription>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Current time: {format(currentTime, 'h:mm a')}
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
