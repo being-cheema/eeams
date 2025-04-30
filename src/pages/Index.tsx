@@ -6,9 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Mail, Lock, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { checkAuth } from '@/services/api';
-
-const API_BASE_URL = 'http://localhost:8000/api';
+import { checkAuth, API_BASE_URL } from '@/services/api';
 
 const Index = () => {
   const [email, setEmail] = useState('');
@@ -37,7 +35,7 @@ const Index = () => {
               navigate('/teacher-dashboard');
               break;
             case 'ADM':
-              window.location.href = 'http://localhost:8000/admin';
+              window.location.href = `${API_BASE_URL}/admin/`;
               break;
           }
         }
@@ -89,7 +87,7 @@ const Index = () => {
           navigate('/teacher-dashboard');
           break;
         case 'ADM':
-          window.location.href = 'http://localhost:8000/admin';
+          window.location.href = `${API_BASE_URL}/admin/`;
           return;
         default:
           throw new Error('Invalid user role');
