@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     historyApiFallback: true,
   },
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000/api'),
+  },
   plugins: [
     react(),
     mode === 'development' &&
@@ -21,4 +24,5 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  
 }));

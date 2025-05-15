@@ -137,10 +137,10 @@ const Layout: React.FC<LayoutProps> = ({ children, navItems, role = 'student', u
               <div className="mt-auto">
                 <div className="flex items-center gap-3 mb-4 p-4 border-t">
                   <div className="w-10 h-10 rounded-full bg-brand-orange/20 flex items-center justify-center text-brand-orange font-semibold">
-                    {userName.charAt(0)}
+                    {(userName || 'U').charAt(0)}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{userName}</p>
+                    <p className="text-sm font-medium">{userName || 'User'}</p>
                     <p className="text-xs text-muted-foreground capitalize">{role}</p>
                   </div>
                 </div>

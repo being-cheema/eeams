@@ -63,9 +63,6 @@ const PaymentProofUploader: React.FC<PaymentProofUploaderProps> = ({ activePayme
     <Card className="glass-card">
       <CardHeader>
         <CardTitle>Upload Payment Proof</CardTitle>
-        <CardDescription>
-          Submit proof of payment for {activeWindow.batch_name} (₹{activeWindow.amount.toLocaleString()})
-        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">

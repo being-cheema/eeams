@@ -47,16 +47,16 @@ const PaymentQRSection: React.FC<PaymentQRSectionProps> = ({
           <QRCode />
         </div>
         <div className="space-y-2 text-center">
-          <p className="text-2xl font-bold">₹{activeWindow.amount.toLocaleString()}</p>
+          <p className="text-2xl font-bold">₹{totalPendingFee.toLocaleString()}</p>
           <p className="text-sm text-muted-foreground">
             Due by {new Date(activeWindow.end_date).toLocaleDateString()}
           </p>
-          {totalPendingFee > 0 && (
+          {/* {totalPendingFee > 0 && (
             <div className="mt-4 pt-4 border-t border-border/40">
               <p className="text-sm text-muted-foreground">Total Pending Fee</p>
               <p className="text-xl font-bold text-brand-orange">₹{totalPendingFee.toLocaleString()}</p>
             </div>
-          )}
+          )} */}
         </div>
       </CardContent>
     </Card>
