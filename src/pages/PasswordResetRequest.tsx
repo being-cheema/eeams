@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,14 @@ const PasswordResetRequest = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/lovable-uploads/f692b1dd-a91b-4cdc-b3c9-341999084393.png" 
+              alt="Easy Exam Academy Logo" 
+              className="w-12 h-12"
+            />
+          </div>
           <CardTitle>Reset Password</CardTitle>
           <CardDescription>
             Enter your email address and we'll send you a link to reset your password.
@@ -64,4 +72,4 @@ const PasswordResetRequest = () => {
   );
 };
 
-export default PasswordResetRequest; 
+export default PasswordResetRequest;

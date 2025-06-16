@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Mail, Lock, BookOpen } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { checkAuth, API_BASE_URL } from '@/services/api';
@@ -123,9 +123,11 @@ const Index = () => {
         <div className="w-full max-w-md space-y-8 animate-fade-in">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-brand-orange flex items-center justify-center">
-                <BookOpen className="text-white" size={32} />
-              </div>
+              <img 
+                src="/lovable-uploads/f692b1dd-a91b-4cdc-b3c9-341999084393.png" 
+                alt="Easy Exam Academy Logo" 
+                className="w-16 h-16"
+              />
             </div>
             <h1 className="text-3xl font-kollektif text-foreground mb-1">Easy Exam Academy</h1>
             <p className="text-muted-foreground">Empowering young minds, inspiring futures!</p>
@@ -194,7 +196,16 @@ const Index = () => {
       
       {/* Right side (image/illustration) */}
       <div className="hidden lg:flex flex-1 bg-brand-cream relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center p-12">
+        {/* Banner at the top */}
+        <div className="absolute top-0 left-0 right-0 z-20">
+          <img 
+            src="/lovable-uploads/5af1bef5-858a-4ab9-99d2-a6e82a8aa085.png" 
+            alt="Easy Exam Academy Banner" 
+            className="w-full h-auto max-h-20 object-contain"
+          />
+        </div>
+        
+        <div className="absolute inset-0 flex items-center justify-center p-12 mt-20">
           <div className="relative z-10 text-center max-w-md">
             <h2 className="text-4xl font-kollektif mb-4 text-brand-orange animate-float">Attendance System</h2>
             <p className="text-lg text-foreground/80">

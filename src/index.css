@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.cdnfonts.com/css/kollektif');
 
@@ -82,5 +81,37 @@
     before:content-[''] before:absolute before:top-0 before:left-0 before:w-full before:h-full 
     before:bg-black/10 before:translate-x-[-100%] before:skew-x-[-45deg] before:transition-transform before:duration-500 
     hover:before:translate-x-[100%];
+  }
+
+  /* Custom styles for attendance date picker */
+  .attendance-date-picker input[type="date"] {
+    @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200;
+  }
+
+  .attendance-date-picker input[type="date"]::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer p-1 rounded hover:bg-gray-100 transition-colors;
+  }
+
+  /* Date picker quick buttons styling */
+  .date-quick-buttons button {
+    @apply transition-all duration-200 hover:scale-105 active:scale-95;
+  }
+
+  /* Enhanced alert styling for attendance notifications */
+  .attendance-alert {
+    @apply border-l-4 border-l-blue-500 shadow-sm;
+  }
+
+  /* Attendance status indicators */
+  .attendance-status-present {
+    @apply bg-green-100 text-green-800 border-green-200;
+  }
+
+  .attendance-status-absent {
+    @apply bg-red-100 text-red-800 border-red-200;
+  }
+
+  .attendance-status-late {
+    @apply bg-yellow-100 text-yellow-800 border-yellow-200;
   }
 }

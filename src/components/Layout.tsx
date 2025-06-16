@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
@@ -36,7 +37,12 @@ const Layout: React.FC<LayoutProps> = ({ children, navItems, role = 'student', u
         <header className="sticky top-0 z-50 md:hidden flex items-center justify-between p-4 bg-white/80 backdrop-blur-md border-b">
           <div className="flex items-center">
             <SidebarTrigger />
-            <span className="ml-2 font-kollektif text-xl">Easy Exam</span>
+            <img 
+              src="/lovable-uploads/f692b1dd-a91b-4cdc-b3c9-341999084393.png" 
+              alt="Easy Exam Academy" 
+              className="w-8 h-8 ml-2 mr-2"
+            />
+            <span className="font-kollektif text-xl">Easy Exam</span>
           </div>
           <button 
             onClick={toggleMobileMenu}
@@ -50,10 +56,19 @@ const Layout: React.FC<LayoutProps> = ({ children, navItems, role = 'student', u
           {/* Sidebar */}
           <Sidebar className="border-r border-border/40 bg-white/70 backdrop-blur-md hidden md:flex">
             <div className="px-6 py-8">
-              <h1 className="text-2xl font-kollektif text-brand-orange animate-fade-in">
-                Easy Exam
-                <span className="block text-sm text-muted-foreground mt-1">Attendance System</span>
-              </h1>
+              <div className="flex items-center gap-3 mb-2">
+                <img 
+                  src="/lovable-uploads/f692b1dd-a91b-4cdc-b3c9-341999084393.png" 
+                  alt="Easy Exam Academy" 
+                  className="w-12 h-12"
+                />
+                <div>
+                  <h1 className="text-xl font-kollektif text-brand-orange animate-fade-in">
+                    Easy Exam
+                  </h1>
+                  <span className="text-sm text-muted-foreground">Attendance System</span>
+                </div>
+              </div>
             </div>
             <SidebarContent className="px-4">
               <div className="space-y-1">
@@ -102,7 +117,14 @@ const Layout: React.FC<LayoutProps> = ({ children, navItems, role = 'student', u
           )}>
             <div className="flex flex-col h-full p-4">
               <div className="flex justify-between items-center mb-8">
-                <h1 className="text-xl font-kollektif text-brand-orange">Easy Exam Academy</h1>
+                <div className="flex items-center gap-3">
+                  <img 
+                    src="/lovable-uploads/f692b1dd-a91b-4cdc-b3c9-341999084393.png" 
+                    alt="Easy Exam Academy" 
+                    className="w-10 h-10"
+                  />
+                  <h1 className="text-xl font-kollektif text-brand-orange">Easy Exam Academy</h1>
+                </div>
                 <button 
                   onClick={toggleMobileMenu}
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"

@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { getTeacherDashboard, getBatchStudents, markAttendance, getTeacherAttendanceReports, getTodayAttendance, getUserInfo } from '@/services/api';
 import { useNavigate } from 'react-router-dom';
@@ -68,7 +69,7 @@ const TeacherDashboard = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
-  const [attendanceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceStatus, setAttendanceStatus] = useState<Record<number, AttendanceStatus>>({});
   const [todayAttendance, setTodayAttendance] = useState<TodayAttendanceData | null>(null);
   const [selectedView, setSelectedView] = useState<ViewType>('daily');
@@ -179,7 +180,7 @@ const TeacherDashboard = () => {
     }
   ];
 
-  const handleStatusChange = (studentId: number, status: 'P' | 'A' | 'L', remarks: string = 'ok') => {
+  const handleStatusChange = (studentId: number, status: 'P' | 'A' | 'L', remarks: string = 'Marked') => {
     setAttendanceStatus(prev => ({
       ...prev,
       [studentId]: { status, remarks }
@@ -197,8 +198,18 @@ const TeacherDashboard = () => {
   };
 
   const handleMarkAttendance = async () => {
-    if (!selectedBatch || Object.keys(attendanceStatus).length === 0) {
-      toast.error('Please select a batch and mark attendance for students');
+    if (!selectedBatch) {
+      toast.error('Please select a batch');
+      return;
+    }
+
+    if (!attendanceDate) {
+      toast.error('Please select a date');
+      return;
+    }
+
+    if (Object.keys(attendanceStatus).length === 0) {
+      toast.error('Please mark attendance for at least one student');
       return;
     }
 
@@ -216,7 +227,10 @@ const TeacherDashboard = () => {
         class_remark: classRemark
       });
 
-      toast.success('Attendance marked successfully!');
+      const selectedBatchName = dashboardData?.batches.find(b => b.id === parseInt(selectedBatch))?.name || 'Selected Batch';
+      const dateFormatted = format(new Date(attendanceDate), 'MMMM d, yyyy');
+      
+      toast.success(`Attendance marked successfully for ${selectedBatchName} on ${dateFormatted}!`);
       
       // Refresh today's attendance after marking
       await fetchTodayAttendance();
@@ -226,7 +240,7 @@ const TeacherDashboard = () => {
       setClassRemark('');
     } catch (error) {
       console.error('Error marking attendance:', error);
-      toast.error('Failed to mark attendance');
+      toast.error('Failed to mark attendance. Please try again.');
     }
   };
 
@@ -275,6 +289,13 @@ const TeacherDashboard = () => {
     
     return () => clearInterval(timer);
   }, []);
+
+  // Clear attendance status when date changes
+  useEffect(() => {
+    // Clear attendance status when date changes to prevent confusion
+    setAttendanceStatus({});
+    setClassRemark('');
+  }, [attendanceDate]);
 
   if (isLoading) {
     return (
@@ -362,14 +383,14 @@ const TeacherDashboard = () => {
               <CardHeader>
                 <CardTitle>Mark Student Attendance</CardTitle>
                 <CardDescription>
-                  Select a batch and mark attendance for today ({format(new Date(attendanceDate), 'EEEE, MMMM d, yyyy')})
+                  Select a batch and date to mark attendance ({format(new Date(attendanceDate), 'EEEE, MMMM d, yyyy')})
                 </CardDescription>
                 <div className="text-sm text-muted-foreground mt-1">
                   Current time: {format(currentTime, 'h:mm a')}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="batch">Select Batch</Label>
                     <Select value={selectedBatch} onValueChange={setSelectedBatch}>
@@ -384,6 +405,62 @@ const TeacherDashboard = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="attendanceDate" className="flex items-center gap-2">
+                      Attendance Date
+                      {attendanceDate !== new Date().toISOString().split('T')[0] && (
+                        <Badge variant="outline" className="text-xs">
+                          {new Date(attendanceDate) < new Date() ? 'Past Date' : 'Future Date'}
+                        </Badge>
+                      )}
+                    </Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="attendanceDate"
+                        type="date"
+                        value={attendanceDate}
+                        onChange={(e) => setAttendanceDate(e.target.value)}
+                        className="cursor-pointer attendance-date-picker focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      />
+                      <div className="flex gap-1 date-quick-buttons">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
+                            setAttendanceDate(yesterday.toISOString().split('T')[0]);
+                          }}
+                          className="text-xs px-2 py-1 h-6 transition-all duration-200 hover:scale-105 active:scale-95"
+                        >
+                          Yesterday
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAttendanceDate(new Date().toISOString().split('T')[0])}
+                          className="text-xs px-2 py-1 h-6 transition-all duration-200 hover:scale-105 active:scale-95"
+                        >
+                          Today
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const tomorrow = new Date();
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            setAttendanceDate(tomorrow.toISOString().split('T')[0]);
+                          }}
+                          className="text-xs px-2 py-1 h-6 transition-all duration-200 hover:scale-105 active:scale-95"
+                        >
+                          Tomorrow
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="search">Search Student</Label>
@@ -405,6 +482,23 @@ const TeacherDashboard = () => {
                     onChange={(e) => setClassRemark(e.target.value)}
                   />
                 </div>
+
+                {/* Alert for non-current dates */}
+                {attendanceDate !== new Date().toISOString().split('T')[0] && (
+                  <Alert className="border-blue-200 bg-blue-50 border-l-4 border-l-blue-500 shadow-sm">
+                    <Clock className="h-4 w-4" />
+                    <AlertTitle>
+                      {new Date(attendanceDate) < new Date() ? 'Marking Past Attendance' : 'Marking Future Attendance'}
+                    </AlertTitle>
+                    <AlertDescription>
+                      You are marking attendance for {format(new Date(attendanceDate), 'EEEE, MMMM d, yyyy')}
+                      {new Date(attendanceDate) < new Date() 
+                        ? ' (a past date). This is useful for corrections or missed entries.'
+                        : ' (a future date). This can be useful for planning purposes.'
+                      }
+                    </AlertDescription>
+                  </Alert>
+                )}
                 
                 <Table>
                   <TableHeader>
@@ -485,7 +579,12 @@ const TeacherDashboard = () => {
                   className="ml-auto bg-brand-orange hover:bg-brand-orange/90 animated-btn"
                   disabled={!selectedBatch || Object.keys(attendanceStatus).length === 0}
                 >
-                  {Object.values(isAttendanceMarked).some(Boolean) ? 'Update Attendance' : 'Save Attendance'}
+                  {Object.values(isAttendanceMarked).some(Boolean) ? 'Update' : 'Save'} Attendance
+                  {attendanceDate !== new Date().toISOString().split('T')[0] && (
+                    <span className="ml-1 text-xs opacity-75">
+                      ({format(new Date(attendanceDate), 'MMM d')})
+                    </span>
+                  )}
                 </Button>
               </CardFooter>
             </Card>

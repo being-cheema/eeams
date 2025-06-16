@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Upload, FileText, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { submitPayment } from '@/services/api';
 
@@ -65,6 +66,26 @@ const PaymentProofUploader: React.FC<PaymentProofUploaderProps> = ({ activePayme
         <CardTitle>Upload Payment Proof</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Monthly Payment Alert */}
+        <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="space-y-2">
+              <p className="font-medium">Monthly Payment Policy:</p>
+              <ul className="space-y-1 text-xs">
+                <li>• Only <strong>one payment upload per month</strong> is allowed</li>
+                <li>• Any remaining fees will automatically <strong>carry forward</strong> to the next month</li>
+                <li>• Your next month's total will include: New monthly fee + Previous remaining amount</li>
+              </ul>
+              <div className="mt-3 p-2 bg-blue-100 dark:bg-blue-900 rounded text-xs">
+                <p className="font-medium">Example:</p>
+                <p>Monthly fee: ₹500 | You paid: ₹300 | Remaining: ₹200</p>
+                <p>Next month total: ₹500 + ₹200 = ₹700</p>
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
+
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium">Upload Payment Proof</label>

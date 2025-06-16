@@ -18,6 +18,13 @@ const NotFound = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="text-center animate-fade-in">
         <div className="mb-8">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/lovable-uploads/f692b1dd-a91b-4cdc-b3c9-341999084393.png" 
+              alt="Easy Exam Academy Logo" 
+              className="w-16 h-16"
+            />
+          </div>
           <div className="relative">
             <div className="text-9xl font-kollektif text-brand-orange font-bold mb-2 opacity-10">404</div>
             <div className="text-6xl font-kollektif absolute inset-0 flex items-center justify-center text-foreground">404</div>
